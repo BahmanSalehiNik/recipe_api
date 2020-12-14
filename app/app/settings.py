@@ -37,7 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core'
+    'rest_framework',
+    'rest_framework.authtoken',
+    'core',
+    'user',
+    'recipe',
 ]
 
 MIDDLEWARE = [
@@ -77,10 +81,10 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': 'localhost',#os.environ.get('DB_HOST'),
-        'NAME': 'autotraderdb',#os.environ.get('DB_NAME'),
+        'HOST': os.environ.get('DB_HOST'),#'localhost',#
+        'NAME': 'recipesdb',#os.environ.get('DB_NAME'),#
         'USER': 'postgres',#os.environ.get('DB_USER'),
-        'PASSWORD': '123456',#os.environ.get('DB_PASS'),
+        'PASSWORD': 123456,# os.environ.get('DB_PASS'),#,'123456'
     }
 }
 
