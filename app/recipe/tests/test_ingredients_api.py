@@ -58,3 +58,34 @@ class PrivateIngredientApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
         self.assertIn(res.data[0]['name'], ingredient.name)
+
+    def test_create_ingredients_successfully(self):
+        """Test that ingredients are created successfully"""
+        payload = {'name': 'water'}
+        res = self.client.post(INGREDIENTS_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        exists = Ingredient.objects.filter(
+                user=self.user,
+                name=payload['name']
+                ).exists()
+        self.assertTrue(exists)
+
+    def test_create_ingredients_unauthorized_user(self):
+        """Test that unauthorized user cannot create ingredients"""
+        new_user = get_user_model().objects.create_user(email='new_user@test.ir', password='newPass')
+        new_client = APIClient()
+        #new_client.force_authenticate(new_user)
+
+        res = new_client.post(INGREDIENTS_URL, {'name': 'Orange'})
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        #Ingredient.objects.create(user=new_user, name='Orange')
+        #exists = Ingredient.objects.filter(user=new_user, name='Orange').exists()
+        #self.assertFalse(exists)
+
+    def test_create_ingredients_invalid(self):
+        """Test that ingredients with invalid data are not created"""
+        payload = {'name': ''}
+        res = self.client.post(INGREDIENTS_URL,payload)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
