@@ -43,7 +43,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        """Retrieve the recepies for the authenticated user"""
+        """Retrieve the recipes for the authenticated user"""
         return self.queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
@@ -52,3 +52,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return serializers.RecipeDetailSerializer
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new recipe"""
+        serializer.save(user=self.request.user)
