@@ -158,3 +158,49 @@ class PrivateRecipeApiTest(TestCase):
         self.assertIn(tag_1, tags)
         self.assertIn(tag_2, tags)
 
+    def test_partial_updating_recipe(self):
+        """Test updating a recipe with patch"""
+        tag_1 = sample_tag(user=self.user, name='Barbeque')
+        ingredient_1 = sample_ingredient(user=self.user, name="Meat")
+
+        payload = {
+            'title': 'Barbeque kobab',
+            'time_minutes': 45,
+            'price': 100.00,
+            'tags': [tag_1.id],
+            'ingredients': [ingredient_1.id]
+        }
+
+        res = self.client.post(RECIPES_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        payload_update = {'title': 'New kobab'}
+        url = detail_url(res.data['id'])
+        res_update = self.client.patch(url, payload_update)
+
+        recipe = Recipe.objects.get(id=res.data['id'])
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.title, payload_update['title'])
+        tags = recipe.tags.all()
+        self.assertEqual(len(tags), 1)
+        self.assertIn(tag_1, tags)
+
+    def test_full_update_recipe(self):
+        """Test fully updating a recipe"""
+        recipe = sample_recipe(user=self.user, title='soup')
+        tag_1 = sample_tag(user=self.user, name='picnic')
+        ingredient_1 = sample_ingredient(user=self.user, name='vegetables')
+        payload = {
+            'title': 'Ghormeh',
+            'time_minutes': 180,
+            'price': 35.00,
+            'tags': [tag_1.id],
+            'ingredients': [ingredient_1.id]
+        }
+        url = detail_url(recipe.id)
+        self.client.put(url, payload)
+        recipe.refresh_from_db()
+
+        serializer = RecipeSerializer(recipe)
+        self.assertEqual(payload['title'], serializer.data['title'])
