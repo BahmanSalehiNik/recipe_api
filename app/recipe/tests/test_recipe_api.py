@@ -250,4 +250,52 @@ class RecipeImageUploadTest(TestCase):
         res = self.client.post(url, {'image': 'data'}, format='multipart')
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_filter_recipes_by_tags(self):
+        """Test returning recipes by specific tags"""
+        recipe_1 = sample_recipe(user=self.user, title='Wine')
+        recipe_2 = sample_recipe(user=self.user, title='Mohito')
+        tag_1 = sample_tag(user=self.user, name='Alcohol')
+        tag_2 = sample_tag(user=self.user, name='Vegan')
+        recipe_1.tags.add(tag_1)
+        recipe_2.tags.add(tag_2)
+        recipe_3 = sample_recipe(user=self.user, title='Fish')
+
+        res = self.client.get(
+            RECIPES_URL,
+            {'tags' :f'{tag_1.id}, {tag_2.id}'}
+        )
+
+        serializer_1 = RecipeSerializer(recipe_1)
+        serializer_2 = RecipeSerializer(recipe_2)
+        serializer_3 = RecipeSerializer(recipe_3)
+
+        self.assertIn(serializer_1.data, res.data)
+        self.assertIn(serializer_2.data, res.data)
+        self.assertNotIn(serializer_3.data, res.data)
+
+    def test_filtering_recipes_by_ingredients(self):
+        """Test filtering recipes by specific ingredients"""
+        recipe_1 = sample_recipe(user=self.user, title='Kobab')
+        recipe_2 = sample_recipe(user=self.user, title='Vegetable Pizza')
+        recipe_3 = sample_recipe(user=self.user, title='Salad')
+        ingredient_1 = sample_ingredient(user=self.user, name='Meat')
+        ingredient_2 = sample_ingredient(user=self.user, name='Cheese')
+        recipe_1.ingredients.add(ingredient_1)
+        recipe_2.ingredients.add(ingredient_2)
+
+        res = self.client.get(
+            RECIPES_URL,
+            {'ingredients': f'{ingredient_1.id}, {ingredient_2.id}'}
+        )
+
+        serializer_1 = RecipeSerializer(recipe_1)
+        serializer_2 = RecipeSerializer(recipe_2)
+        serializer_3 = RecipeSerializer(recipe_3)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(serializer_1.data, res.data)
+        self.assertIn(serializer_2.data, res.data)
+        self.assertNotIn(serializer_3, res.data)
+
+
 
